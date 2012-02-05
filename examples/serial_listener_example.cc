@@ -1,9 +1,10 @@
 #include <iostream>
 
 #include <serial/serial.h>
-#include <serial/serial_listener.h>
+#include <serial/utils/serial_listener.h>
 
 using namespace serial;
+using namespace serial::utils;
 
 void default_handler(std::string token) {
   std::cout << "default_handler got a: " << token << std::endl;

@@ -4,6 +4,6 @@
   <license>BSD</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/serial_utils</url>
-  <depend stack="ros" />
+  <depend stack="serial" />
 
 </stack>

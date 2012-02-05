@@ -59,6 +59,7 @@
 #endif
 
 namespace serial {
+  namespace utils {
 
 /*!
  * This is an alias to boost::shared_ptr<const std::string> used for tokens.
@@ -926,6 +927,7 @@ private:
 
 };
 
+  } // namespace utils
 } // namespace serial
 
 #endif // SERIAL_LISTENER_H

@@ -1,4 +1,4 @@
-macro(build_serial)
+macro(build_serial_utils)
 ## Project Setup
 cmake_minimum_required(VERSION 2.4.6)
 
@@ -6,7 +6,7 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-project(Serial)
+project(serial_utils)
 
 ## Configurations
 
@@ -19,8 +19,8 @@ IF(EXISTS /usr/bin/clang)
   set(CMAKE_BUILD_TYPE Debug)
 ENDIF(EXISTS /usr/bin/clang)
 
-option(SERIAL_BUILD_TESTS "Build all of the Serial tests." OFF)
-option(SERIAL_BUILD_EXAMPLES "Build all of the Serial examples." OFF)
+option(SERIAL_UTILS_BUILD_TESTS "Build all of the Serial utils tests." OFF)
+option(SERIAL_UTILS_BUILD_EXAMPLES "Build all of the Serial utils examples." OFF)
 
 # Allow for building shared libs override
 IF(NOT BUILD_SHARED_LIBS)
@@ -42,58 +42,50 @@ ENDIF(NOT DEFINED(LIBRARY_OUTPUT_PATH))
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 # Add default source files
-set(SERIAL_SRCS src/serial.cc src/impl/unix.cc src/serial_listener.cc)
+set(SERIAL_UTILS_SRCS src/serial_listener.cc)
 # Add default header files
-set(SERIAL_HEADERS include/serial/serial.h include/serial/serial_listener.h)
+set(SERIAL_UTILS_HEADERS include/serial/utils/serial_listener.h)
 
-IF(UNIX)
-  list(APPEND SERIAL_SRCS src/impl/unix.cc)
-  list(APPEND SERIAL_HEADERS include/serial/impl/unix.h)
-ELSE(UNIX)
-  
-ENDIF(UNIX)
+# Find serial
+IF(NOT serial_FOUND)
+    find_package(serial REQUIRED)
+ENDIF(NOT serial_FOUND)
+
+include_directories(${serial_INCLUDE_DIRS})
+
+set(SERIAL_UTILS_LINK_LIBS ${serial_LIBRARIES})
 
 # Find Boost, if it hasn't already been found
-IF(NOT Boost_FOUND OR NOT Boost_SYSTEM_FOUND OR NOT Boost_FILESYSTEM_FOUND OR NOT Boost_THREAD_FOUND)
-    find_package(Boost COMPONENTS system filesystem thread REQUIRED)
-ENDIF(NOT Boost_FOUND OR NOT Boost_SYSTEM_FOUND OR NOT Boost_FILESYSTEM_FOUND OR NOT Boost_THREAD_FOUND)
+IF(NOT Boost_FOUND OR NOT Boost_THREAD_FOUND)
+    find_package(Boost COMPONENTS thread REQUIRED)
+ENDIF(NOT Boost_FOUND OR NOT Boost_THREAD_FOUND)
 
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
-set(SERIAL_LINK_LIBS ${Boost_SYSTEM_LIBRARY}
-                     ${Boost_FILESYSTEM_LIBRARY}
-                     ${Boost_THREAD_LIBRARY})
+list(APPEND SERIAL_UTILS_LINK_LIBS ${Boost_THREAD_LIBRARY})
 
 ## Build the Serial Library
 
 # Compile the Library
-add_library(serial ${SERIAL_SRCS} ${SERIAL_HEADERS})
-target_link_libraries(serial ${SERIAL_LINK_LIBS})
-IF( WIN32 )
-  target_link_libraries(serial wsock32)
-ENDIF( )
+add_library(serial_utils ${SERIAL_UTILS_SRCS})
+target_link_libraries(serial_utils ${SERIAL_UTILS_LINK_LIBS})
 
 ## Build Examples
 
 # If asked to
-IF(SERIAL_BUILD_EXAMPLES)
-    # Compile the Serial Test program
-    add_executable(serial_example examples/serial_example.cc)
-    # Link the Test program to the Serial library
-    target_link_libraries(serial_example serial)
-    
+IF(SERIAL_UTILS_BUILD_EXAMPLES)
     # Compile the Serial Listener Test program
-    add_executable(serial_listener_example 
+    add_executable(serial_listener_example
                    examples/serial_listener_example.cc)
     # Link the Test program to the Serial library
-    target_link_libraries(serial_listener_example serial)
-ENDIF(SERIAL_BUILD_EXAMPLES)
+    target_link_libraries(serial_listener_example serial_utils serial)
+ENDIF(SERIAL_UTILS_BUILD_EXAMPLES)
 
 ## Build tests
 
 # If asked to
-IF(SERIAL_BUILD_TESTS)
+IF(SERIAL_UTILS_BUILD_TESTS)
     # Find Google Test
     enable_testing()
     find_package(GTest REQUIRED)
@@ -101,43 +93,37 @@ IF(SERIAL_BUILD_TESTS)
 
     # Compile the Serial Listener Test program
     add_executable(serial_listener_tests tests/serial_listener_tests.cc)
-    add_executable(serial_tests tests/serial_tests.cc)
-    # Link the Test program to the serial library
+    # Link the Test program to the serial_utils library
     target_link_libraries(serial_listener_tests ${GTEST_BOTH_LIBRARIES}
-                          serial)
-    target_link_libraries(serial_tests ${GTEST_BOTH_LIBRARIES}
-                          serial)
+                          serial_utils serial)
 
-    # # See: http://code.google.com/p/googlemock/issues/detail?id=146
-    # add_definitions(-DGTEST_USE_OWN_TR1_TUPLE=1)
-    add_test(AllTestsIntest_serial serial_listener_tests)
-    add_test(AllTestsIntest_serial serial_tests)
-ENDIF(SERIAL_BUILD_TESTS)
+    add_test(AllTestsIntest_serial_listener serial_listener_listener_tests)
+ENDIF(SERIAL_UTILS_BUILD_TESTS)
 
 ## Setup install and uninstall
 
 # Unless asked not to...
-IF(NOT SERIAL_DONT_CONFIGURE_INSTALL)
+IF(NOT SERIAL_UTILS_DONT_CONFIGURE_INSTALL)
     # Configure make install
     IF(NOT CMAKE_INSTALL_PREFIX)
         SET(CMAKE_INSTALL_PREFIX /usr/local)
     ENDIF(NOT CMAKE_INSTALL_PREFIX)
     
-    INSTALL(TARGETS serial
+    INSTALL(TARGETS serial_utils
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib
       ARCHIVE DESTINATION lib
     )
     
-    INSTALL(FILES include/serial/serial.h
-                  include/serial/serial_listener.h
-            DESTINATION include/serial)
+    INSTALL(FILES include/serial/utils/serial_listener.h
+            DESTINATION include/serial/utils)
     
     IF(NOT CMAKE_FIND_INSTALL_PATH)
         set(CMAKE_FIND_INSTALL_PATH ${CMAKE_ROOT})
     ENDIF(NOT CMAKE_FIND_INSTALL_PATH)
     
-    INSTALL(FILES Findserial.cmake DESTINATION ${CMAKE_FIND_INSTALL_PATH}/Modules/)
+    INSTALL(FILES Findserial_utils.cmake
+            DESTINATION ${CMAKE_FIND_INSTALL_PATH}/Modules/)
     
     ADD_CUSTOM_TARGET(uninstall @echo uninstall package)
     
@@ -154,5 +140,5 @@ IF(NOT SERIAL_DONT_CONFIGURE_INSTALL)
         TARGET  uninstall
       )
     ENDIF(UNIX)
-ENDIF(NOT SERIAL_DONT_CONFIGURE_INSTALL)
-endmacro(build_serial)
+ENDIF(NOT SERIAL_UTILS_DONT_CONFIGURE_INSTALL)
+endmacro(build_serial_utils)

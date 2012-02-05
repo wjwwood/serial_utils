@@ -10,6 +10,10 @@
   <url>http://ros.org/wiki/serial_utils</url>
   <depend package="serial"/>
 
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-L${prefix}/lib -Wl,-rpath,${prefix}/lib -lserial_utils"/>
+  </export>
+
 </package>
 
 

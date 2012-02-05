@@ -28,8 +28,9 @@
 #define private public
 #define protected public
 
-#include "serial/serial_listener.h"
+#include "serial/utils/serial_listener.h"
 using namespace serial;
+using namespace serial::utils;
 
 static size_t global_count, global_listen_count;
 static bool matched;

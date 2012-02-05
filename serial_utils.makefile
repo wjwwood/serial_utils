@@ -1,4 +1,4 @@
-all: serial
+all: serial_utils
 
 install:
 	cd build && make install
@@ -6,7 +6,7 @@ install:
 uninstall:
 	cd build && make uninstall
 
-serial:
+serial_utils:
 	@mkdir -p build
 	-mkdir -p bin
 	cd build && cmake $(CMAKE_FLAGS) ..
@@ -31,7 +31,7 @@ endif
 test:
 	@mkdir -p build
 	@mkdir -p bin
-	cd build && cmake $(CMAKE_FLAGS) -DSERIAL_BUILD_TESTS=1 -DSERIAL_BUILD_EXAMPLES=1 ..
+	cd build && cmake $(CMAKE_FLAGS) -DSERIAL_UTILS_BUILD_TESTS=1 -DSERIAL_UTILS_BUILD_EXAMPLES=1 ..
 ifneq ($(MAKE),)
 	cd build && $(MAKE)
 else
