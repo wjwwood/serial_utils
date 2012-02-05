@@ -1,0 +1,15 @@
+<package>
+  <description brief="serial_utils">
+
+     serial_utils
+
+  </description>
+  <author>William Woodall</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/serial_utils</url>
+  <depend package="serial"/>
+
+</package>
+
+
