@@ -47,9 +47,9 @@ SerialListener::~SerialListener() {
 void
 SerialListener::callback() {
   try {
-    // <filter id, token>
-    std::pair<FilterPtr,TokenPtr> pair;
     while (this->listening) {
+      // <filter id, token>
+      std::pair<FilterPtr,TokenPtr> pair;
       if (this->callback_queue.timed_wait_and_pop(pair, 10)) {
         if (this->listening) {
           try {
