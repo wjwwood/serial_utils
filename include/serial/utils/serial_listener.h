@@ -48,6 +48,9 @@
 // Serial
 #include <serial/serial.h>
 
+// Concurrent Queue
+#include "serial/utils/concurrent_queue.h"
+
 // Boost
 #include <boost/function.hpp>
 #include <boost/algorithm/string.hpp>
@@ -217,80 +220,6 @@ public:
     std::stringstream ss;
     ss << "SerialListenerException: " << this->e_what_;
     return ss.str().c_str();
-  }
-};
-
-// Based on: http://www.justsoftwaresolutions.co.uk/threading/implementing-a-thread-safe-queue-using-condition-variables.html
-template<typename Data>
-class ConcurrentQueue
-{
-private:
-  std::queue<Data> the_queue;
-  mutable boost::mutex the_mutex;
-  boost::condition_variable the_condition_variable;
-public:
-  void push(Data const& data) {
-    boost::mutex::scoped_lock lock(the_mutex);
-    the_queue.push(data);
-    lock.unlock();
-    the_condition_variable.notify_one();
-  }
-
-  bool empty() const {
-    boost::mutex::scoped_lock lock(the_mutex);
-    return the_queue.empty();
-  }
-
-  bool try_pop(Data& popped_value) {
-    boost::mutex::scoped_lock lock(the_mutex);
-    if(the_queue.empty()) {
-      return false;
-    }
-
-    popped_value=the_queue.front();
-    the_queue.pop();
-    return true;
-  }
-
-  bool timed_wait_and_pop(Data& popped_value, long timeout) {
-    using namespace boost::posix_time;
-    bool result;
-    boost::mutex::scoped_lock lock(the_mutex);
-    result = !the_queue.empty();
-    if (!result) {
-      result = the_condition_variable.timed_wait(lock, milliseconds(timeout));
-    }
-
-    if (result) {
-      popped_value=the_queue.front();
-      the_queue.pop();
-    }
-    return result;
-  }
-
-  void wait_and_pop(Data& popped_value) {
-    boost::mutex::scoped_lock lock(the_mutex);
-    while(the_queue.empty()) {
-      the_condition_variable.wait(lock);
-    }
-
-    popped_value=the_queue.front();
-    the_queue.pop();
-  }
-
-  size_t size() const {
-    return the_queue.size();
-  }
-
-  void cancel() {
-    the_condition_variable.notify_one();
-  }
-
-  void clear() {
-    boost::mutex::scoped_lock lock(the_mutex);
-    while (!the_queue.empty()) {
-      the_queue.pop();
-    }
   }
 };
 

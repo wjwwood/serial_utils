@@ -97,6 +97,11 @@ IF(SERIAL_UTILS_BUILD_TESTS)
     target_link_libraries(serial_listener_tests ${GTEST_BOTH_LIBRARIES}
                           serial_utils serial)
 
+    # Compile the concurrent queue tests
+    add_executable(concurrent_queue_tests tests/concurrent_queue_tests.cc)
+    target_link_libraries(concurrent_queue_tests ${GTEST_BOTH_LIBRARIES}
+                          ${Boost_THREAD_LIBRARY})
+
     add_test(AllTestsIntest_serial_listener serial_listener_listener_tests)
 ENDIF(SERIAL_UTILS_BUILD_TESTS)
 
