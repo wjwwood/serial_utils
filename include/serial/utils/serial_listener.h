@@ -714,12 +714,16 @@ private:
   // Gets some data from the serial port
   void readSomeData (std::string &temp, size_t this_many) {
     // Make sure there is a serial port
-    if (this->serial_port_ == NULL) {
+    if (this->serial_port_ == NULL && this->listening) {
       this->handle_exc(SerialListenerException("Invalid serial port."));
     }
     // Make sure the serial port is open
-    if (!this->serial_port_->isOpen()) {
+    if (!this->serial_port_->isOpen() && this->listening) {
       this->handle_exc(SerialListenerException("Serial port not open."));
+    }
+    if (!this->listening) {
+      temp = "";
+      return;
     }
     temp = this->serial_port_->read(this_many);
   }
