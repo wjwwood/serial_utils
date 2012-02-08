@@ -50,17 +50,16 @@ SerialListener::callback() {
     while (this->listening) {
       // <filter id, token>
       std::pair<FilterPtr,TokenPtr> pair;
-      if (this->callback_queue.timed_wait_and_pop(pair, 10)) {
-        if (this->listening) {
-          try {
-            if (pair.first != NULL && pair.second != NULL) {
-              pair.first->callback_((*pair.second));
-            }
-          } catch (std::exception &e) {
-            this->handle_exc(e);
-          }// try callback
-        } // if listening
-      } // if popped
+      this->callback_queue.wait_and_pop(pair);
+      if (this->listening) {
+        try {
+          if (pair.first != NULL && pair.second != NULL) {
+            pair.first->callback_((*pair.second));
+          }
+        } catch (std::exception &e) {
+          this->handle_exc(e);
+        }// try callback
+      } // if listening
     } // while (this->listening)
   } catch (std::exception &e) {
     this->handle_exc(SerialListenerException(e.what()));
@@ -92,6 +91,7 @@ void
 SerialListener::stopListening() {
   // Stop listening and clear buffers
   listening = false;
+  callback_queue.cancel();
 
   listen_thread.join();
   callback_thread.join();
