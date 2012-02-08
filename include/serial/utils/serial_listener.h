@@ -288,6 +288,14 @@ public:
   void
   stopListening ();
 
+  /*!
+   * Returns true if currently listening, false oterhwise.
+   */
+  bool
+  isListening () {
+    return this->listening;
+  }
+
 /***** Filter Functions ******/
 
   /*!
