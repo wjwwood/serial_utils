@@ -36,6 +36,14 @@ SerialListener::SerialListener() : listening(false), chunk_size_(5) {
 
   // Set default tokenizer
   this->setTokenizer(delimeter_tokenizer("\r"));
+
+  // Set the number of callback threads
+  unsigned int hardware_concurrency = boost::thread::hardware_concurrency();
+  if (hardware_concurrency > 0) {
+    this->num_threads_ = hardware_concurrency;
+  } else {
+    this->num_threads_ = 0;
+  }
 }
 
 SerialListener::~SerialListener() {
@@ -45,7 +53,7 @@ SerialListener::~SerialListener() {
 }
 
 void
-SerialListener::callback() {
+SerialListener::callback(size_t thread_index) {
   try {
     while (this->listening) {
       // <filter id, token>
@@ -73,28 +81,36 @@ SerialListener::startListening(Serial &serial_port) {
     return;
   }
   this->listening = true;
-  
+
   this->serial_port_ = &serial_port;
   if (!this->serial_port_->isOpen()) {
     throw(SerialListenerException("Serial port not open."));
     return;
   }
-  
+
   listen_thread = boost::thread(boost::bind(&SerialListener::listen, this));
-  
-  // Start the callback thread
-  callback_thread =
-   boost::thread(boost::bind(&SerialListener::callback, this));
+
+  // Start the callback threads
+  for(size_t i = 0; i < this->num_threads_; ++i) {
+    callback_threads.push_back(new
+      boost::thread(boost::bind(&SerialListener::callback, this, i)));
+  }
 }
 
 void
 SerialListener::stopListening() {
   // Stop listening and clear buffers
   listening = false;
-  callback_queue.cancel();
-
   listen_thread.join();
-  callback_thread.join();
+
+  callback_queue.cancel();
+  for(size_t i = 0; i < this->num_threads_; ++i) {
+    callback_threads[i]->join();
+    delete callback_threads[i];
+  }
+  callback_threads.clear();
+  callback_queue.clear();
+  callback_queue.clear_cancel();
 
   this->data_buffer = "";
   this->serial_port_ = NULL;
