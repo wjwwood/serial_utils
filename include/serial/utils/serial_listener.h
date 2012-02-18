@@ -41,7 +41,7 @@
 #endif
 
 // STL
-#include <queue>
+#include <vector>
 #include <stdint.h>
 #include <iostream>
 
@@ -661,7 +661,7 @@ private:
   // Function that loops while listening is true
   void listen ();
   // Target of callback thread
-  void callback ();
+  void callback (size_t);
   // Determines how much to read on each loop of listen
   size_t determineAmountToRead ();
 
@@ -690,7 +690,8 @@ private:
   // filter id == 0 is going to be default handled
   ConcurrentQueue<std::pair<FilterPtr,TokenPtr> >
   callback_queue;
-  boost::thread callback_thread;
+  size_t num_threads_;
+  std::vector<boost::thread*> callback_threads;
 
   // Mutex for locking use of filters
   boost::mutex filter_mux;

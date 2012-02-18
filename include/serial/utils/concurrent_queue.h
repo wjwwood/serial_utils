@@ -14,7 +14,10 @@ private:
   std::queue<Data> the_queue;
   mutable boost::mutex the_mutex;
   boost::condition_variable the_condition_variable;
+  bool canceled_;
 public:
+  ConcurrentQueue() : canceled_(false) {}
+
   void push(Data const& data) {
     boost::mutex::scoped_lock lock(the_mutex);
     the_queue.push(data);
@@ -56,7 +59,7 @@ public:
 
   void wait_and_pop(Data& popped_value) {
     boost::mutex::scoped_lock lock(the_mutex);
-    while(the_queue.empty()) {
+    while(the_queue.empty() && !this->canceled_) {
       the_condition_variable.wait(lock);
     }
 
@@ -69,7 +72,12 @@ public:
   }
 
   void cancel() {
-    the_condition_variable.notify_one();
+    this->canceled_ = true;
+    the_condition_variable.notify_all();
+  }
+
+  void clear_cancel() {
+    this->canceled_ = false;
   }
 
   void clear() {
