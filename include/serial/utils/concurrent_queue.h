@@ -48,7 +48,7 @@ public:
     }
 
     if (result) {
-      popped_value=the_queue.front();
+      popped_value = the_queue.front();
       the_queue.pop();
     }
     return result;

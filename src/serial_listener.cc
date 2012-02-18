@@ -20,7 +20,7 @@ using namespace serial::utils;
 
 void
 SerialListener::default_handler(const std::string &token) {
-  if (this->_default_handler)
+  if (this->_default_handler != NULL)
     this->_default_handler(token);
 }
 
@@ -53,7 +53,7 @@ SerialListener::callback() {
       if (this->callback_queue.timed_wait_and_pop(pair, 10)) {
         if (this->listening) {
           try {
-            if (pair.first != NULL && pair.second != NULL) {
+            if (pair.first.get() != NULL && pair.second.get() != NULL) {
               pair.first->callback_((*pair.second));
             }
           } catch (std::exception &e) {
@@ -73,16 +73,17 @@ SerialListener::startListening(Serial &serial_port) {
     throw(SerialListenerException("Already listening."));
     return;
   }
-  this->listening = true;
-  
+
   this->serial_port_ = &serial_port;
   if (!this->serial_port_->isOpen()) {
     throw(SerialListenerException("Serial port not open."));
     return;
   }
-  
+
+  this->listening = true;
+
   listen_thread = boost::thread(boost::bind(&SerialListener::listen, this));
-  
+
   // Start the callback thread
   callback_thread =
    boost::thread(boost::bind(&SerialListener::callback, this));
