@@ -232,7 +232,7 @@ public:
   /*!
    * Creates a new Serial Listener.
    */
-  SerialListener ();
+  SerialListener (size_t num_threads = 0);
 
   /*!
    * Destructor.

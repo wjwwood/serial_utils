@@ -24,7 +24,7 @@ SerialListener::default_handler(const std::string &token) {
     this->_default_handler(token);
 }
 
-SerialListener::SerialListener() : listening(false), chunk_size_(5) {
+SerialListener::SerialListener(size_t num_threads) : listening(false), chunk_size_(5) {
   // Set default callbacks
   this->handle_exc = defaultExceptionCallback;
 
@@ -38,11 +38,15 @@ SerialListener::SerialListener() : listening(false), chunk_size_(5) {
   this->setTokenizer(delimeter_tokenizer("\r"));
 
   // Set the number of callback threads
-  unsigned int hardware_concurrency = boost::thread::hardware_concurrency();
-  if (hardware_concurrency > 0) {
-    this->num_threads_ = hardware_concurrency;
+  if (num_threads == 0) {
+     unsigned int hardware_concurrency = boost::thread::hardware_concurrency();
+    if (hardware_concurrency > 0) {
+      this->num_threads_ = hardware_concurrency;
+    } else {
+      this->num_threads_ = 1;
+    }
   } else {
-    this->num_threads_ = 0;
+    this->num_threads_ = num_threads;
   }
 }
 
