@@ -63,8 +63,10 @@ public:
       the_condition_variable.wait(lock);
     }
 
-    popped_value=the_queue.front();
-    the_queue.pop();
+    if (!this->canceled_) {
+      popped_value = the_queue.front();
+      the_queue.pop();
+    }
   }
 
   size_t size() const {
