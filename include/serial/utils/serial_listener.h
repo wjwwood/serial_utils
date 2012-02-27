@@ -601,8 +601,8 @@ private:
   static bool
   _exactly (const std::string& token, std::string exact_str) {
 #if SERIAL_LISTENER_DEBUG
-    std::cerr << "In exactly callback(" << token.length() << "): ";
-    std::cerr << token << " == " << exact_str << ": ";
+    std::cerr << "In exactly callback(" << token.length() << "): `";
+    std::cerr << token << "` == `" << exact_str << "`?: ";
     if (token == exact_str)
       std::cerr << "True";
     else
@@ -615,9 +615,9 @@ private:
   static bool
   _startsWith (const std::string& token, std::string prefix) {
 #if SERIAL_LISTENER_DEBUG
-    std::cerr << "In startsWith callback(" << token.length() << "): ";
-    std::cerr << token << " starts with " << prefix;
-    std::cerr << "?: ";
+    std::cerr << "In startsWith callback(" << token.length() << "): `";
+    std::cerr << token << "` starts with `" << prefix;
+    std::cerr << "`?: ";
     if (token.substr(0,prefix.length()) == prefix)
       std::cerr << "True";
     else
@@ -632,8 +632,8 @@ private:
 #if SERIAL_LISTENER_DEBUG
     std::cerr << "In endsWith callback(";
     std::cerr << token.length();
-    std::cerr << "): " << token;
-    std::cerr << " ends with " << postfix << "?: ";
+    std::cerr << "): `" << token;
+    std::cerr << "` ends with `" << postfix << "`?: ";
     if (token.substr(token.length()-postfix.length()) == postfix)
       std::cerr << "True";
     else
@@ -645,6 +645,17 @@ private:
   // contains comparator function
   static bool
   _contains (const std::string& token, std::string substr) {
+#if SERIAL_LISTENER_DEBUG
+    std::cerr << "In contains callback(";
+    std::cerr << token.length();
+    std::cerr << "): `" << token;
+    std::cerr << "` contains `" << substr << "`?: ";
+    if (token.find(substr) != std::string::npos)
+      std::cerr << "True";
+    else
+      std::cerr << "False";
+    std::cerr << std::endl;
+#endif
     return token.find(substr) != std::string::npos;
   }
 

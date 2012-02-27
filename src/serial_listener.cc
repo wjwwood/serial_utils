@@ -168,6 +168,7 @@ SerialListener::listen() {
       // Read some data
       std::string temp;
       this->readSomeData(temp, determineAmountToRead());
+      // std::cout << "SerialListener::listen read(" << temp.length() << "): " << temp << std::endl;
       // If nothing was read then we
       //  don't need to iterate through the filters
       if (temp.length() != 0) {
