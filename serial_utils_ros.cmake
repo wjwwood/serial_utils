@@ -1,43 +1,30 @@
 macro(build_serial_utils)
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(serial_utils)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE Debug)
+find_package(catkin REQUIRED COMPONENTS serial)
 
-rosbuild_init()
+find_package(Boost REQUIRED COMPONENTS system thread)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+catkin_package(
+  INCLUDE_DIRS include
+  LIBRARIES serial_listener
+  CATKIN_DEPENDS serial
+  DEPENDS Boost
+)
 
-include_directories(include)
+include_directories(include ${catkin_INCLUDE_DIRS})
 
-set(SERIAL_UTILS_SRCS src/serial_listener.cc)
+## serial_listener library
+add_library(serial_listener src/serial_listener.cc)
+target_link_libraries(serial_listener ${serial_LIBRARIES} ${Boost_LIBRARIES})
 
-# Build the serial library
-rosbuild_add_library(${PROJECT_NAME} ${SERIAL_UTILS_SRCS})
+install(TARGETS serial_listener
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-# Add boost dependencies
-rosbuild_add_boost_directories()
-rosbuild_link_boost(${PROJECT_NAME} thread)
-
-# Build example
-rosbuild_add_executable(serial_listener_example
-                        examples/serial_listener_example.cc)
-target_link_libraries(serial_listener_example ${PROJECT_NAME})
-
-# Create unit tests
-# rosbuild_add_gtest(serial_listener_tests tests/serial_listener_tests.cc)
-# target_link_libraries(serial_listener_tests ${PROJECT_NAME})
-
-rosbuild_add_gtest(concurrent_queue_tests tests/concurrent_queue_tests.cc)
-rosbuild_link_boost(concurrent_queue_tests thread)
-
-endmacro(build_serial_utils)
+install(DIRECTORY include/serial/
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/serial
+  FILES_MATCHING PATTERN "*.h")
+endmacro()

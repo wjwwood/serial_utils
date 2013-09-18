@@ -105,21 +105,21 @@ typedef boost::function<bool(const std::string&)> ComparatorType;
 
 /*!
  * This function type describes the prototype for the tokenizer callback.
- * 
+ *
  * The function should take a std::string reference and tokenize it into a
- * several TokenPtr's and store them in the given std::vector<TokenPtr> 
+ * several TokenPtr's and store them in the given std::vector<TokenPtr>
  * reference.  There are some default ones or the user can create their own.
- * 
+ *
  * The last element in the std::vector of TokenPtr's should always be
  * either an empty string ("") or the last partial message.  The last element
  * in the std::vector will be put back into the data buffer so that if it is
  * incomplete it can be completed when more data is read.
- * 
+ *
  * Example: A delimeter tokenizer with a delimeter of "\r".  The result would
  * be: "msg1\rmsg2\r" -> ["msg1", "msg2", ""] for two complete messages, or:
- * "msg1\rpartial_msg2" -> ["msg1","partial_msg2"] for one complete message 
+ * "msg1\rpartial_msg2" -> ["msg1","partial_msg2"] for one complete message
  * and one partial message.
- * 
+ *
  * \see SerialListener::setTokenizer, serial::delimeter_tokenizer,
  * serial::TokenPtr
  */
@@ -213,7 +213,7 @@ typedef boost::shared_ptr<BufferedFilter> BufferedFilterPtr;
 class SerialListenerException : public std::exception {
   const std::string e_what_;
 public:
-  SerialListenerException(const std::string e_what) : e_what_(e_what) {}
+  SerialListenerException(const std::string &e_what) : e_what_(e_what) {}
   ~SerialListenerException() throw() {}
 
   virtual const char* what() const throw() {
@@ -413,15 +413,15 @@ public:
 
   /*!
    * Sets the handler to be called when a lines is not caught by a filter.
-   * 
-   * This allows you to set a catch all function that will get called 
+   *
+   * This allows you to set a catch all function that will get called
    * everytime a line is not matched by a filter and the ttl expires.
-   * 
+   *
    * Setting the callbacks works just like SerialListener::setInfoHandler.
-   * 
-   * \param default_handler A function pointer to the callback to handle 
+   *
+   * \param default_handler A function pointer to the callback to handle
    * unmatched and expired messages.
-   * 
+   *
    * \see serial::DataCallback, SerialListener::setInfoHandler
    */
   void setDefaultHandler(DataCallback default_handler) {
@@ -430,13 +430,13 @@ public:
 
   /*!
    * Sets the function to be called when an exception occurs internally.
-   * 
-   * This allows you to hook into the exceptions that occur in threads inside 
+   *
+   * This allows you to hook into the exceptions that occur in threads inside
    * the serial listener library.
-   * 
-   * \param exception_handler A function pointer to the callback to handle new 
+   *
+   * \param exception_handler A function pointer to the callback to handle new
    * interal exceptions.
-   * 
+   *
    * \see serial::ExceptionCallback
    */
   void
@@ -594,7 +594,7 @@ private:
     typedef std::vector<std::string> find_vector_type;
     find_vector_type t;
     boost::split(t, data, boost::is_any_of(delimeter));
-    for (find_vector_type::iterator it = t.begin(); it != t.end(); it++)
+    for (find_vector_type::iterator it = t.begin(); it != t.end(); ++it)
       tokens.push_back(TokenPtr( new std::string(*it) ));
   }
   // exact comparator function

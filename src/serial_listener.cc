@@ -10,7 +10,7 @@ inline void defaultExceptionCallback(const std::exception &error) {
 }
 
 inline bool defaultComparator(const std::string &token) {
-  return token == token;
+  return true;
 }
 
 using namespace serial;
@@ -82,13 +82,11 @@ void
 SerialListener::startListening(Serial &serial_port) {
   if (this->listening) {
     throw(SerialListenerException("Already listening."));
-    return;
   }
 
   this->serial_port_ = &serial_port;
   if (!this->serial_port_->isOpen()) {
     throw(SerialListenerException("Serial port not open."));
-    return;
   }
 
   this->listening = true;
@@ -125,8 +123,8 @@ SerialListener::stopListening() {
 
 size_t
 SerialListener::determineAmountToRead() {
-  // TODO: Make a more intelligent method based on the length of the things 
-  //  filters are looking for.  e.g.: if the filter is looking for 'V=XX\r' 
+  // TODO: Make a more intelligent method based on the length of the things
+  //  filters are looking for.  e.g.: if the filter is looking for 'V=XX\r'
   //  make the read amount at least 5.
   return this->chunk_size_;
 }
@@ -137,7 +135,7 @@ SerialListener::filter(std::vector<TokenPtr> &tokens) {
   boost::mutex::scoped_lock lock(filter_mux);
   // Iterate through each new token and filter them
   std::vector<TokenPtr>::iterator it;
-  for (it=tokens.begin(); it!=tokens.end(); it++) {
+  for (it=tokens.begin(); it!=tokens.end(); ++it) {
     TokenPtr token = (*it);
     // If it is empty then pass it
     if (token->empty()) {
@@ -146,7 +144,7 @@ SerialListener::filter(std::vector<TokenPtr> &tokens) {
     bool matched = false;
     // Iterate through each filter
     std::vector<FilterPtr>::iterator itt;
-    for (itt=filters.begin(); itt!=filters.end(); itt++) {
+    for (itt=filters.begin(); itt!=filters.end(); ++itt) {
       FilterPtr filter = (*itt);
       if (filter->comparator_((*token))) {
         callback_queue.push(std::make_pair(filter,token));

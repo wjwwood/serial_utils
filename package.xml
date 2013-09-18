@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>serial_utils</name>
+  <version>0.0.0</version>
+  <description>A package which adds useful additions to the serial package.</description>
+
+  <maintainer email="wjwwood@gmail.com">William Woodall</maintainer>
+
+  <license>BSD</license>
+
+  <url type="repository">http://github.com/wjwwood/serial_utils</url>
+  <url type="bugtracker">http://github.com/wjwwood/serial_utils/issues</url>
+
+  <author email="wjwwood@gmail.com">William Woodall</author>
+  <author email="ash.gti@gmail.com">John Harrison</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>boost</build_depend>
+  <build_depend>serial</build_depend>
+
+  <run_depend>boost</run_depend>
+  <run_depend>serial</run_depend>
+
+</package>
